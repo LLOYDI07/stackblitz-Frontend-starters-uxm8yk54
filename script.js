@@ -1,20 +1,26 @@
+// Base API endpoint for all appointment requests
 const API_URL =
   'https://appointment-booking-api-iir8.onrender.com/appointments';
 
-// Load appointments
+
+
+// LOAD APPOINTMENTS (GET)
+
 async function loadAppointments() {
   const res = await fetch(API_URL);
   const data = await res.json();
-
   const container = document.getElementById('appointments');
-  container.innerHTML = '';
+  container.innerHTML = ''; 
 
+  // Loop through each appointment
   data.forEach((app) => {
     const div = document.createElement('div');
     div.className = 'card';
 
+    // Convert status to lowercase for CSS class styling
     const statusClass = app.status.toLowerCase();
 
+    // Populate appointment card HTML
     div.innerHTML = `
       <strong>${app.customerName}</strong><br>
       Service: ${app.service}<br>
@@ -23,13 +29,14 @@ async function loadAppointments() {
       Status: <span class="status ${statusClass}">${app.status}</span><br>
 
       <div class="actions">
+        <!-- Stop propagation prevents opening modal when clicking button -->
         <button onclick="event.stopPropagation(); markComplete(${app.id})">✔ Complete</button>
         <button onclick="event.stopPropagation(); cancelAppointment(${app.id})">✖ Cancel</button>
         <button onclick="event.stopPropagation(); deleteAppointment(${app.id})">🗑 Delete</button>
       </div>
     `;
 
-    // Click to open modal
+    // Clicking card opens modal with details
     div.addEventListener('click', () => {
       showDetails(app);
     });
@@ -38,7 +45,9 @@ async function loadAppointments() {
   });
 }
 
-// Add appointment
+
+// ADD NEW APPOINTMENT (POST)
+
 async function addAppointment() {
   const customerName = document.getElementById('name').value;
   const service = document.getElementById('service').value;
@@ -50,6 +59,7 @@ async function addAppointment() {
     return;
   }
 
+  // Send POST request to API
   await fetch(API_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -58,15 +68,18 @@ async function addAppointment() {
       service,
       date,
       time,
-      status: 'Scheduled',
+      status: 'Scheduled', // default status
     }),
   });
 
-  clearInputs();
-  loadAppointments();
+  clearInputs();       
+  loadAppointments();  
 }
 
-// Mark complete
+
+
+// MARK APPOINTMENT AS COMPLETED (PUT)
+
 async function markComplete(id) {
   await fetch(`${API_URL}/${id}`, {
     method: 'PUT',
@@ -74,10 +87,13 @@ async function markComplete(id) {
     body: JSON.stringify({ status: 'Completed' }),
   });
 
-  loadAppointments();
+  loadAppointments(); 
 }
 
-// Cancel
+
+
+// CANCEL APPOINTMENT (PUT)
+
 async function cancelAppointment(id) {
   await fetch(`${API_URL}/${id}`, {
     method: 'PUT',
@@ -85,33 +101,38 @@ async function cancelAppointment(id) {
     body: JSON.stringify({ status: 'Cancelled' }),
   });
 
-  loadAppointments();
+  loadAppointments(); 
 }
 
-// Delete
+
+
+// DELETE APPOINTMENT (DELETE)
+
 async function deleteAppointment(id) {
   await fetch(`${API_URL}/${id}`, {
     method: 'DELETE',
   });
 
-  loadAppointments();
+  loadAppointments(); 
 }
 
-// 🔥 Show modal with 1s loading
+
+
+// SHOW MODAL WITH DETAILS
+
 function showDetails(app) {
   const modal = document.getElementById('modal');
   const loading = document.getElementById('loading');
   const details = document.getElementById('modalDetails');
 
   modal.style.display = 'block';
-
   loading.style.display = 'block';
   details.style.display = 'none';
+
 
   setTimeout(() => {
     loading.style.display = 'none';
     details.style.display = 'block';
-
     details.innerHTML = `
       <h3>Appointment Details</h3>
       <p><strong>Name:</strong> ${app.customerName}</p>
@@ -124,12 +145,15 @@ function showDetails(app) {
   }, 1000);
 }
 
-// Close modal
+
+
+// CLOSE MODAL
 function closeModal() {
   document.getElementById('modal').style.display = 'none';
 }
 
-// Click outside to close
+// CLOSE MODAL WHEN CLICKING OUTSIDE
+
 window.onclick = function (event) {
   const modal = document.getElementById('modal');
   if (event.target === modal) {
@@ -137,7 +161,7 @@ window.onclick = function (event) {
   }
 };
 
-// Clear inputs
+
 function clearInputs() {
   document.getElementById('name').value = '';
   document.getElementById('service').value = '';
@@ -145,5 +169,5 @@ function clearInputs() {
   document.getElementById('time').value = '';
 }
 
-// Init
-loadAppointments();
+
+loadAppointments(); 
